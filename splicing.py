@@ -14,11 +14,10 @@ import cairocffi as cairo
 import argparse as ap
 import re
 import gzip
-#import numpy as np
 import time
 import math
 import random
-
+import matplotlib as plt
 
 #####################
 # Argument Parser   #
@@ -41,12 +40,30 @@ args = get_args()
 fasta = args.fasta #fasta file
 motifs = args.motif #motif
 
+#set up color palate
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+rgb_colors = []
+for c in colors:
+	c = c.lstrip('#')
+	rgb_colors.append(tuple(int(c[i:i+2], 16) for i in (0, 2 ,4)))
+
 #############
 # FUNCTIONS #
 #############
 
+def getNextColor(index):
+		#get color palate
 	
-
+		
+	if index < len(rgb_colors):	
+		return rgb_colors[index]
+	else:
+		index_mod = index%len(rgb_colors)
+		r,g,b = rgb_colors[index_mod]
+		r = max(min(random.normal(r,25),255),0)
+		g = max(min(random.normal(g,25),255),0)
+		b = max(min(random.normal(b,25),255),0)
+		return (r,g,b)
 
 def find_all(motif_in, sequence_in):
 	#find all motifs by switching ambiguous nucleotides
@@ -121,7 +138,7 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	
 	pat = cairo.LinearGradient(0.0,0.0,0.0,1.0)
 	#pat.add_color_stop_rgba(0.2,1,0,0.5)
-	pat.add_color_stop_rgba(0.3,1,0.2,0.5)
+	pat.add_color_stop_rgba(0,0.3,1,0.2,0.5)
 	
 	#draw legend
 	context.rectangle(5,5,12,12)
@@ -147,15 +164,13 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	
 	
 	#draw motifs
-	
+
 	for i,motif in enumerate(motifs_list):
 		j = i+1
 		positions = find_all(motif,gene)
 		mot = cairo.LinearGradient(0.0,0.0,0.0,0.7)
-		r = random.uniform(0, 1)
-		g = random.uniform(0, 1)
-		b = random.uniform(0, 1)
-		mot.add_color_stop_rgba(r,g,b,0.2)
+		r,g,b = getNextColor(i)
+		mot.add_color_stop_rgba(0,r/255,g/255,b/255,0.9)
 		context.rectangle(5,30*j,12,12)
 		context.set_source(mot)
 		context.fill()
