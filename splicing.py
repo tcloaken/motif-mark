@@ -25,6 +25,7 @@ import random
 #####################
 def get_args():
 	parser = ap.ArgumentParser()
+	parser = ap.ArgumentParser(description="This is a program that takes two arguments: a FASTA file and a simple text file with a list of splicing motifs.  Returns an SVG documents (one per gene) illustrating where the splicing motifs are in each gene")
 	parser.add_argument("-F","--fasta", help="put the path the FASTA file after the flag followed by a space for the GENE sequence"
 	,type=str)
 	parser.add_argument("-M","--motif", help="put the path the motif file after the flag followed by a space for the motif"
