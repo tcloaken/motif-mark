@@ -97,16 +97,13 @@ def getMotifList(List):
 				return getMotifList(List)
 				
 	return List
-		
-	
+
 
 def RevComp(nucleotides):
 	"""
 	Given a DNA sequence (nucleotides) return the reverse compliment
 	"""
-	
 	swap = {"A":"T","T":"A","G":"C","C":"G","N":"N"}#dictionary
-
 	return ''.join([ swap[x] for x in nucleotides[::-1]])
 
 def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
@@ -132,9 +129,14 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	context.fill()
 	context.select_font_face("pyrus", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 	context.set_font_size(20)
-	context.move_to(20, 15)
+	context.move_to(20, 18)
 	context.set_source_rgb(0, 0, 0)
 	context.show_text("Exon")
+	context.move_to(85, 12)
+	context.line_to(97,12)
+	context.stroke()
+	context.move_to(100,18)
+	context.show_text("Intron")
 	
 	#draw exons
 	for start, lengths in zip(exons_pos,ex_lengths):
