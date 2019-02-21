@@ -125,14 +125,14 @@ def RevComp(nucleotides):
 
 def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	
-	width = len(gene)+100
+	width = len(gene)+150
 	height = 100+ (len(motifs_list)+2)*50
 	
 	surface = cairo.SVGSurface(fileName+".svg", width, height)
 	context = cairo.Context(surface)
 	context.set_line_width(5)
-	context.move_to(0,height-50)
-	context.line_to(len(gene), height-50)
+	context.move_to(50,height-50)
+	context.line_to(len(gene)+50, height-50)
 	
 	context.stroke()
 	
@@ -157,17 +157,21 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	
 	#draw exons
 	for start, lengths in zip(exons_pos,ex_lengths):
-		context.rectangle(int(start[0]),height-100,int(lengths),100)
+		context.rectangle(int(start[0])+50,height-100,int(lengths),100)
 		context.set_source(pat)
 		context.fill()
 		context.stroke()
 	
 	
 	#draw motifs
-
+	skipped = 0
 	for i,motif in enumerate(motifs_list):
-		j = i+1
+		j = i+1-skipped
 		positions = find_all(motif,gene)
+		if positions == []:
+			#just skip the rest if there are no motifs in that gene
+			skipped += 1
+			continue
 		mot = cairo.LinearGradient(0.0,0.0,0.0,0.7)
 		r,g,b = getNextColor(i)
 		mot.add_color_stop_rgba(0,r/255,g/255,b/255,0.9)
@@ -178,7 +182,7 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 		context.set_source_rgb(0, 0, 0)
 		context.show_text(motif)
 		for pos in positions:
-			context.rectangle(int(pos),height-100,len(motif),100)
+			context.rectangle(int(pos)+50,height-100,len(motif),100)
 			context.set_source(mot)
 			context.fill()
 			context.stroke()
@@ -187,30 +191,24 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 		
 	
 
-def find_exon_intron_positions(genes):
-
+def find_exon_positions(genes):
+	#exons need to be capitalized
 	exon_pat = "[A-Z]+"
-	intron_pat = "[a-z]+"
 	
 	#get list for exons and introns that have 
 	exon_list = [re.findall(exon_pat,x) for x in genes]
-	intron_list = [re.findall(intron_pat,x) for x in genes]
 	
 	exon_pos = []
-	intron_pos = []
+	
 	for i,x in enumerate(exon_list):
 		for exon in x:
 			exon_pos.append([(m.start(), m.end()) for m in re.finditer(exon,genes[i])])
-	
-	for i,x in enumerate(intron_list):
-		for introns in x:
-			intron_pos.append([(m.start(), m.end()) for m in re.finditer(introns,genes[i])])	
 	
 	exon_lengths = []
 	for x in exon_list:
 		exon_lengths.append([ int(len(ex)) for ex in x])
 	
-	return(exon_pos,exon_lengths,intron_pos)
+	return(exon_pos,exon_lengths)
 	
 	
 def processFiles():
@@ -250,7 +248,7 @@ def main():
 	Calls functions to execute program
 	"""
 	motif_list,genes,gene_names = processFiles()
-	exon_pos,exon_lengths,intron_pos = find_exon_intron_positions(genes)
+	exon_pos,exon_lengths = find_exon_positions(genes)
 	genes = [gene.lower() for gene in genes]
 	for i,gene in enumerate(genes):
 		DrawIt(exon_pos[i],exon_lengths[i],motif_list,gene,gene_names[i])
