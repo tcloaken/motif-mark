@@ -25,7 +25,7 @@ import matplotlib as plt
 def get_args():
 	parser = ap.ArgumentParser()
 	parser = ap.ArgumentParser(description="This is a program that takes two arguments: a FASTA file and a simple text file with a list of splicing motifs.  Returns an SVG documents (one per gene) illustrating where the splicing motifs are in each gene")
-	parser.add_argument("-F","--fasta", help="put the path the FASTA file after the flag followed by a space for the GENE sequence"
+	parser.add_argument("-F","--fasta", help="put the path the FASTA file after the flag followed by a space for the GENE sequence, assumes genes are in the orientation"
 	,type=str)
 	parser.add_argument("-M","--motif", help="put the path the motif file after the flag followed by a space for the motif"
 	,type=str)
@@ -111,7 +111,7 @@ def getMotifList(List):
 				for newLetter in fancy[letter]:
 					motif_m[position] = newLetter
 					List.append("".join(motif_m))
-				return getMotifList(List)
+				return getMotifList(motif_m)
 				
 	return List
 
