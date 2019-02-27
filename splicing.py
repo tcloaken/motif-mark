@@ -90,7 +90,9 @@ def find_all(motif_in, sequence_in):
 		#find motif in the sequence
 		l.append([m.start() for m in re.finditer(motif,sequence_in.lower())])
 	
-	return [item for sublist in l for item in sublist]
+	flatten = [item for sublist in l for item in sublist]
+	
+	return flatten
 
 
 def getMotifList(List):
@@ -99,19 +101,22 @@ def getMotifList(List):
 	fancy = {"r":["a","g"],"y":["c","t"],"s":["g","c"],"w":["a","t"],"k":["g","t"],
 	"m":["a","c"],"b":["c","g","t"],"d":["a","g","t"],"h":["a","c","t"],
 	"v":["a","c","g"],"n":["a","c","g","t"]}
-
+	
+	#loop through the list of motifs
 	for pos,motif in enumerate(List):
+		#loop through each letter in each motif
 		for position,letter in enumerate(motif):
 			if letter in fancy:
-				#keep working: remove the culprite motif from the List
+				#remove the culprite motif from the List
 				#replace it with as many instances of that iupac letter
 				#as is in it's fancy dictionary
 				motif_m = List.pop(pos)
 				motif_m = list(motif_m) #make it mutable
 				for newLetter in fancy[letter]:
-					motif_m[position] = newLetter
+					motif_m[position] = newLetter #change the letter
 					List.append("".join(motif_m))
-				return getMotifList(motif_m)
+				#recurse
+				return getMotifList(List)
 				
 	return List
 
@@ -130,14 +135,13 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	
 	surface = cairo.SVGSurface(fileName+".svg", width, height)
 	context = cairo.Context(surface)
+	#draw Intron
 	context.set_line_width(5)
 	context.move_to(50,height-50)
 	context.line_to(len(gene)+50, height-50)
-	
 	context.stroke()
-	
+	#exon color
 	pat = cairo.LinearGradient(0.0,0.0,0.0,1.0)
-	#pat.add_color_stop_rgba(0.2,1,0,0.5)
 	pat.add_color_stop_rgba(0,0.3,1,0.2,0.5)
 	
 	#draw legend
@@ -154,13 +158,11 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 	context.stroke()
 	context.move_to(100,18)
 	context.show_text("Intron")
+	context.move_to(30,height-50)
+	context.show_text("5'")
+	context.move_to(len(gene)+60,height-50)
+	context.show_text("3'")
 	
-	#draw exons
-	for start, lengths in zip(exons_pos,ex_lengths):
-		context.rectangle(int(start[0])+50,height-100,int(lengths),100)
-		context.set_source(pat)
-		context.fill()
-		context.stroke()
 	
 	
 	#draw motifs
@@ -172,6 +174,7 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 			#just skip the rest if there are no motifs in that gene
 			skipped += 1
 			continue
+		#set color / legend for motif
 		mot = cairo.LinearGradient(0.0,0.0,0.0,0.7)
 		r,g,b = getNextColor(i)
 		mot.add_color_stop_rgba(0,r/255,g/255,b/255,0.9)
@@ -186,7 +189,17 @@ def DrawIt(exons_pos,ex_lengths,motifs_list,gene,fileName):
 			context.set_source(mot)
 			context.fill()
 			context.stroke()
+
 	
+	
+	#draw exons
+	for start, lengths in zip(exons_pos,ex_lengths):
+		context.rectangle(int(start[0])+50,height-100,int(lengths),100)
+		context.set_source(pat)
+		context.fill()
+		context.stroke()
+
+			
 	surface.finish()
 		
 	
